@@ -9,9 +9,9 @@ int screenWidth = 120;
 int screenHeight = 40;
 
 float playerX = 8.0f;
-float playerY = 8.0f;
+float playerY = 3.0f;
 float playerAngle = 0.0f;
-float fov = 3.14159 / 4.0;
+float fov = 3.14159f / 4.0f;
 float depth = 16.0f;
 
 int mapHeight = 16;
@@ -30,21 +30,20 @@ int main()
 	std::wstring map;
 
 	map += L"################";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
-	map += L"................";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..........#...#";
+	map += L"#..........#...#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#......#########";
+	map += L"#..............#";
+	map += L"#..............#";
+	map += L"#..............#";
 	map += L"################";
 
 	auto tp1 = chrono::system_clock::now();
@@ -61,12 +60,24 @@ int main()
 		// Handle CCW Rotation
 		if (GetAsyncKeyState((unsigned short)'A') & 0x8000) 
 		{
-			playerAngle -= (0.1f) * elapsedTime;
+			playerAngle -= (0.8f) * elapsedTime;
 		}
 
 		if (GetAsyncKeyState((unsigned short)'D') & 0x8000)
 		{
-			playerAngle += (0.1f) * elapsedTime;
+			playerAngle += (0.8f) * elapsedTime;
+		}
+
+		if (GetAsyncKeyState((unsigned short)'W') & 0x8000)
+		{
+			playerX += sinf(playerAngle) * 5.0f * elapsedTime;
+			playerY += cosf(playerAngle) * 5.0f * elapsedTime;
+		}
+
+		if (GetAsyncKeyState((unsigned short)'S') & 0x8000)
+		{
+			playerX -= sinf(playerAngle) * 5.0f * elapsedTime;
+			playerY -= cosf(playerAngle) * 5.0f * elapsedTime;
 		}
 
 		for (int x = 0; x < screenWidth; x++) 
@@ -106,18 +117,53 @@ int main()
 			int ceiling = (float)(screenHeight / 2.0) - screenHeight / ((float)distanceToWall);
 			int floor = screenHeight - ceiling;
 
+			short shade = ' ';
+
+			if (distanceToWall <= depth / 4.0f) {
+				shade = 0x2588;
+			}
+			else if (distanceToWall < depth / 3.0f) {
+				shade = 0x2593;
+			}
+			else if (distanceToWall < depth / 2.0f) {
+				shade = 0x2592;
+			}
+			else if (distanceToWall < depth) {
+				shade = 0x2591;
+			}
+			else {
+				shade = ' ';
+			}
+
 			for (int y = 0; y < screenHeight; y++)
 			{
-				if(y < ceiling)
+				if(y <= ceiling)
 				{
 					screen[y * screenWidth + x] = ' ';
 				}
 				else if(y > ceiling && y <= floor) 
 				{
-					screen[y * screenWidth + x] = '#';
+					screen[y * screenWidth + x] = shade;
 				}
 				else {
-					screen[y * screenWidth + x] = ' ';
+					float b = 1.0f - ((float)y - screenHeight / 2.0f) / ((float)screenHeight / 2.0f);
+					if (b < 0.25) {
+						shade = '#';
+					}
+					else if (b < 0.5) {
+						shade = 'X';
+					}
+					else if (b < 0.75) {
+						shade = '.';
+					}
+					else if (b < 0.9) {
+						shade = '-';
+					}
+					else {
+						shade = ' ';
+					}
+
+					screen[y * screenWidth + x] = shade;
 				}
 			}
 		}
