@@ -1,7 +1,8 @@
 #include "pch.h"
 #include <iostream>
 #include <chrono>
-
+#include <vector>
+#include <algorithm>
 using namespace std;
 #include <Windows.h>
 
@@ -72,12 +73,22 @@ int main()
 		{
 			playerX += sinf(playerAngle) * 5.0f * elapsedTime;
 			playerY += cosf(playerAngle) * 5.0f * elapsedTime;
+
+			if (map[(int)playerY * mapWidth + (int)playerX] == '#') {
+				playerX -= sinf(playerAngle) * 5.0f * elapsedTime;
+				playerX -= cosf(playerAngle) * 5.0f * elapsedTime;
+			}
 		}
 
 		if (GetAsyncKeyState((unsigned short)'S') & 0x8000)
 		{
 			playerX -= sinf(playerAngle) * 5.0f * elapsedTime;
 			playerY -= cosf(playerAngle) * 5.0f * elapsedTime;
+
+			if (map[(int)playerY * mapWidth + (int)playerX] == '#') {
+				playerX += sinf(playerAngle) * 5.0f * elapsedTime;
+				playerX += cosf(playerAngle) * 5.0f * elapsedTime;
+			}
 		}
 
 		for (int x = 0; x < screenWidth; x++) 
@@ -86,6 +97,7 @@ int main()
 			float rayAngle = (playerAngle - fov / 2.0f) + ((float)x / (float)screenWidth) * fov;
 			float distanceToWall = 0;
 			bool hitWall = false;
+			bool boundary = false;
 
 			float eyeX = sinf(rayAngle);
 			float eyeY = cosf(rayAngle);
@@ -109,6 +121,31 @@ int main()
 					if (map[testY * mapWidth + testX] == '#') 
 					{
 						hitWall = true;
+						vector<pair<float, float >> p; // Distance to perfect corners of boundary, dot
+
+						for (int tx = 0; tx < 2; tx++) {
+							for (int ty = 0; ty < 2; ty++) {
+								float vy = (float)testY + ty - playerY; // Pefect integer corners offset from player position
+								float vx = (float)testX + tx - playerX;
+								float d = sqrt(vx * vx + vy * vy); // How far the corner is from the player
+								float dot = (eyeX * vx / d) + (eyeY * vy / d); // Representation of angle between ray being cast and unit vector of perfect corner (dot product)
+								p.push_back(make_pair(d, dot));
+							}
+
+
+						}
+
+						//Sort pair from closest to farthest
+						sort(p.begin(), p.end(), [](const pair<float, float> &left, const pair<float, float> &right) {return left.first < right.first; });
+
+						float bound = 0.009;
+						if (acos(p.at(0).second) < bound) {
+							boundary = true;
+						}
+
+						if (acos(p.at(1).second) < bound) {
+							boundary = true;
+						}
 					}
 				}
 			}
@@ -132,6 +169,10 @@ int main()
 				shade = 0x2591;
 			}
 			else {
+				shade = ' ';
+			}
+
+			if (boundary) {
 				shade = ' ';
 			}
 
