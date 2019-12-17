@@ -74,9 +74,9 @@ int main()
 			playerX += sinf(playerAngle) * 5.0f * elapsedTime;
 			playerY += cosf(playerAngle) * 5.0f * elapsedTime;
 
-			if (map[(int)playerY * mapWidth + (int)playerX] == '#') {
+			if (map.c_str()[(int)playerY * mapWidth + (int)playerX] == '#') {
 				playerX -= sinf(playerAngle) * 5.0f * elapsedTime;
-				playerX -= cosf(playerAngle) * 5.0f * elapsedTime;
+				playerY -= cosf(playerAngle) * 5.0f * elapsedTime;
 			}
 		}
 
@@ -85,9 +85,9 @@ int main()
 			playerX -= sinf(playerAngle) * 5.0f * elapsedTime;
 			playerY -= cosf(playerAngle) * 5.0f * elapsedTime;
 
-			if (map[(int)playerY * mapWidth + (int)playerX] == '#') {
+			if (map.c_str()[(int)playerY * mapWidth + (int)playerX] == '#') {
 				playerX += sinf(playerAngle) * 5.0f * elapsedTime;
-				playerX += cosf(playerAngle) * 5.0f * elapsedTime;
+				playerY += cosf(playerAngle) * 5.0f * elapsedTime;
 			}
 		}
 
